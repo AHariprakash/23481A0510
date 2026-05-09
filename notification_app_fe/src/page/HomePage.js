@@ -1,68 +1,86 @@
 import React, { useState } from "react";
+import {
+  Box, Typography, Container, ToggleButton, ToggleButtonGroup,
+  Pagination, CircularProgress, Alert, AppBar, Toolbar, Button
+} from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import useNotifications from "../hook/useNotifications";
 import NotificationCard from "../component/NotificationCard";
 
+const VIEWED_KEY = "viewed_notifications";
+
+const getViewed = () => JSON.parse(localStorage.getItem(VIEWED_KEY) || "[]");
+const markViewed = (id) => {
+  const viewed = getViewed();
+  if (!viewed.includes(id)) {
+    localStorage.setItem(VIEWED_KEY, JSON.stringify([...viewed, id]));
+  }
+};
+
 const HomePage = () => {
-  const [topN, setTopN] = useState(10);
-  const { notifications, loading, error } = useNotifications(topN);
+  const navigate = useNavigate();
+  const [page, setPage] = useState(1);
+  const [filter, setFilter] = useState(null);
+  const { notifications, loading, error, totalPages } = useNotifications(page, 10, filter);
+  const viewed = getViewed();
+
+  const handleCardView = (id) => markViewed(id);
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: "#f5f7fa",
-      padding: "40px 20px",
-    }}>
-      <div style={{ maxWidth: "800px", margin: "0 auto" }}>
-        <h1 style={{ textAlign: "center", color: "#333", marginBottom: "8px" }}>
-          📬 Priority Inbox
-        </h1>
-        <p style={{ textAlign: "center", color: "#888", marginBottom: "30px" }}>
-          Showing top {topN} most important notifications
-        </p>
+    <Box sx={{ minHeight: "100vh", bgcolor: "#f5f7fa" }}>
+      <AppBar position="static" color="primary">
+        <Toolbar sx={{ justifyContent: "space-between" }}>
+          <Typography variant="h6" fontWeight="bold">📬 Campus Notifications</Typography>
+          <Button color="inherit" onClick={() => navigate("/priority")}>
+            ⭐ Priority Inbox
+          </Button>
+        </Toolbar>
+      </AppBar>
 
-        {/* Top N selector */}
-        <div style={{ textAlign: "center", marginBottom: "24px" }}>
-          <label style={{ marginRight: "10px", fontWeight: "600" }}>
-            Show top:
-          </label>
-          {[10, 15, 20].map((n) => (
-            <button
-              key={n}
-              onClick={() => setTopN(n)}
-              style={{
-                margin: "0 5px",
-                padding: "8px 20px",
-                borderRadius: "20px",
-                border: "none",
-                background: topN === n ? "#333" : "#e0e0e0",
-                color: topN === n ? "#fff" : "#333",
-                cursor: "pointer",
-                fontWeight: "600",
-              }}
-            >
-              {n}
-            </button>
-          ))}
-        </div>
+      <Container maxWidth="md" sx={{ py: 4 }}>
+        <Typography variant="h5" fontWeight="bold" mb={1}>All Notifications</Typography>
+        <Typography color="text.secondary" mb={3}>
+          Filter and browse all campus notifications
+        </Typography>
 
-        {/* Legend */}
-        <div style={{ display: "flex", gap: "16px", justifyContent: "center", marginBottom: "24px" }}>
-          {[["Placement", "#4CAF50"], ["Result", "#2196F3"], ["Event", "#FF9800"]].map(([type, color]) => (
-            <span key={type} style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px" }}>
-              <span style={{ width: "12px", height: "12px", borderRadius: "50%", background: color, display: "inline-block" }}></span>
-              {type}
-            </span>
-          ))}
-        </div>
+        {/* Filter */}
+        <ToggleButtonGroup
+          value={filter}
+          exclusive
+          onChange={(e, val) => { setFilter(val); setPage(1); }}
+          sx={{ mb: 3 }}
+        >
+          <ToggleButton value={null}>All</ToggleButton>
+          <ToggleButton value="Placement">Placement</ToggleButton>
+          <ToggleButton value="Result">Result</ToggleButton>
+          <ToggleButton value="Event">Event</ToggleButton>
+        </ToggleButtonGroup>
 
-        {/* Content */}
-        {loading && <p style={{ textAlign: "center" }}>Loading notifications...</p>}
-        {error && <p style={{ textAlign: "center", color: "red" }}>{error}</p>}
+        {loading && <Box textAlign="center"><CircularProgress /></Box>}
+        {error && <Alert severity="error">{error}</Alert>}
         {!loading && !error && notifications.map((n, i) => (
-          <NotificationCard key={n.ID} notification={n} index={i} />
+          <Box key={n.ID} onClick={() => handleCardView(n.ID)}>
+            <NotificationCard
+              notification={n}
+              index={(page - 1) * 10 + i}
+              isNew={!viewed.includes(n.ID)}
+            />
+          </Box>
         ))}
-      </div>
-    </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <Box display="flex" justifyContent="center" mt={3}>
+            <Pagination
+              count={totalPages}
+              page={page}
+              onChange={(e, val) => setPage(val)}
+              color="primary"
+            />
+          </Box>
+        )}
+      </Container>
+    </Box>
   );
 };
 

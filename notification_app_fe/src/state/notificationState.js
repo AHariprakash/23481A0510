@@ -2,5 +2,8 @@ export const initialState = {
   notifications: [],
   loading: false,
   error: null,
-  topN: 10,
+  page: 1,
+  limit: 10,
+  totalPages: 1,
+  notification_type: null,
 };

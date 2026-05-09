@@ -1,58 +1,51 @@
 import React from "react";
+import { Card, CardContent, Typography, Chip, Box } from "@mui/material";
+import CircleIcon from "@mui/icons-material/Circle";
 
 const typeColors = {
-  Placement: "#4CAF50",
-  Result: "#2196F3",
-  Event: "#FF9800",
+  Placement: "success",
+  Result: "primary",
+  Event: "warning",
 };
 
-const NotificationCard = ({ notification, index }) => {
+const NotificationCard = ({ notification, index, isNew }) => {
   return (
-    <div style={{
-      background: "#fff",
-      borderRadius: "10px",
-      padding: "16px 20px",
-      marginBottom: "12px",
-      boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-      borderLeft: `5px solid ${typeColors[notification.Type] || "#ccc"}`,
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-    }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-        <span style={{
-          background: "#f0f0f0",
-          borderRadius: "50%",
-          width: "32px",
-          height: "32px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontWeight: "bold",
-          fontSize: "14px",
-        }}>
-          {index + 1}
-        </span>
-        <div>
-          <p style={{ margin: 0, fontWeight: "600", fontSize: "15px" }}>
-            {notification.Message}
-          </p>
-          <p style={{ margin: "4px 0 0", fontSize: "12px", color: "#888" }}>
-            {notification.Timestamp}
-          </p>
-        </div>
-      </div>
-      <span style={{
-        background: typeColors[notification.Type] || "#ccc",
-        color: "#fff",
-        padding: "4px 12px",
-        borderRadius: "20px",
-        fontSize: "12px",
-        fontWeight: "600",
-      }}>
-        {notification.Type}
-      </span>
-    </div>
+    <Card
+      sx={{
+        mb: 1.5,
+        borderLeft: `5px solid`,
+        borderLeftColor: `${typeColors[notification.Type] || "grey"}.main`,
+        backgroundColor: isNew ? "#f0f7ff" : "#fff",
+        boxShadow: isNew ? "0 2px 12px rgba(33,150,243,0.15)" : 1,
+        transition: "all 0.2s",
+        "&:hover": { boxShadow: 4 },
+      }}
+    >
+      <CardContent sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", py: 1.5 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          {index !== undefined && (
+            <Typography sx={{ fontWeight: "bold", color: "text.secondary", minWidth: 24 }}>
+              {index + 1}
+            </Typography>
+          )}
+          <Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Typography fontWeight={isNew ? 700 : 500} fontSize={15}>
+                {notification.Message}
+              </Typography>
+              {isNew && <CircleIcon sx={{ fontSize: 10, color: "primary.main" }} />}
+            </Box>
+            <Typography fontSize={12} color="text.secondary">
+              {notification.Timestamp}
+            </Typography>
+          </Box>
+        </Box>
+        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+          {isNew && <Chip label="New" size="small" color="primary" variant="outlined" />}
+          <Chip label={notification.Type} size="small" color={typeColors[notification.Type] || "default"} />
+        </Box>
+      </CardContent>
+    </Card>
   );
 };
 

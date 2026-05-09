@@ -1,7 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const { getTopNotifications } = require("../handler/notificationHandler");
+const { getTopNotifications, getAllNotifications } = require("../handler/notificationHandler");
 
-router.get("/notifications", getTopNotifications);
+// Priority route MUST come before the general route
+router.get("/notifications/priority", getTopNotifications);
+router.get("/notifications", getAllNotifications);
 
 module.exports = router;
